@@ -1,5 +1,6 @@
 #include "include.h"
-#include "main.h"
+#include "menuProc.h"
+#include "engineProc.h"
 //	entry point and window handler for the engine starting window.
 
 //	entry point ( console ), takes arguments and return them to "WinMain"
@@ -50,16 +51,11 @@ int WINAPI WinMain(
             WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME,
             500, 100, 600, 600,
             nullptr, nullptr, windowClass.hInstance, nullptr);
-        windowClass.lpszClassName = L"MenuClassName";
         RegisterClassEx(&windowClass);
 
-        hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
-            windowClass.lpszClassName, L"Menu",
-            WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME,
-            500, 100, 600, 600,
-            nullptr, nullptr, windowClass.hInstance, nullptr);
-
         ShowWindow(hwnd, 10);
+
+        std::cout << passedarg << std::endl;
 
     }
 
@@ -78,12 +74,12 @@ int WINAPI WinMain(
         windowClass.hbrBackground = nullptr;
         windowClass.lpszMenuName = nullptr;
         windowClass.hIconSm = nullptr;
-        windowClass.lpszClassName = L"ProjectEditorClassName";
+        windowClass.lpszClassName = L"MenuWindowClassName";
 
         RegisterClassEx(&windowClass);
 
         HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
-            windowClass.lpszClassName, L"Project Editor",
+            windowClass.lpszClassName, L"MOGE menu",
             WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU,
             500, 100, 600, 600,
             nullptr, nullptr, windowClass.hInstance, nullptr);

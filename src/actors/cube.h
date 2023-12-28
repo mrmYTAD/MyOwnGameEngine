@@ -1,5 +1,5 @@
 #define CUBE_H
-#include "../include.h"
+#include "..\include.h"
 
 class cube {
 

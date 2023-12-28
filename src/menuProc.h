@@ -112,6 +112,50 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			SetWindowText(hwnd, titolo.c_str());
 			SetCursor(arrow_cursor);
 
+			if (
+				x > newfilebtn.getPosX() &&
+				y > newfilebtn.getPosY() &&
+				x < (newfilebtn.getPosX() + newfilebtn.getWidth()) &&
+				y < (newfilebtn.getPosY() + newfilebtn.getHeight())
+				)
+			{
+
+				OPENFILENAME ofn;
+				WCHAR szFile[260] = { 0 };
+
+				ZeroMemory(&ofn, sizeof(ofn));
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = hwnd;
+				ofn.lpstrFile = szFile;
+				ofn.nMaxFile = sizeof(szFile);
+				ofn.lpstrFilter = L"All\0*.*\0MOGEprj\0*.MOGE\0";
+				ofn.nFilterIndex = 1;
+				ofn.lpstrFileTitle = NULL;
+				ofn.nMaxFileTitle = 0;
+				ofn.lpstrInitialDir = NULL;
+				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+				if (GetOpenFileName(&ofn) == TRUE)
+				{
+					char cStrFile[260];
+					wcstombs(cStrFile, szFile, wcslen(szFile) + 1);
+
+					DestroyWindow(hwnd);
+
+					std::string program = "C:\\Users\\Matteo\\Desktop\\prjs\\cpp\\MyOwnGameEngine\\MyOwnGameEngine\\x64\\Debug\\MyOwnGameEngine.exe";
+					std::string parameters = cStrFile;
+
+					// Convert to wide strings
+					std::wstring wProgram(program.begin(), program.end());
+					std::wstring wParameters(parameters.begin(), parameters.end());
+
+					ShellExecute(NULL, L"open", wProgram.c_str(), wParameters.c_str(), NULL, SW_SHOW);
+
+					ExitProcess(69);
+				}
+
+			}
+
 		}
 		break;
 
@@ -125,37 +169,4 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
     return DefWindowProc(hwnd, msg, wParam, lParam);
 
-}
-
-LRESULT CALLBACK WndProcEngineWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-
-    switch (msg) {
-
-    case WM_CREATE:
-    {
-
-        SetTimer(hwnd, 1, 500, NULL);
-
-    }
-    break;
-
-    case WM_TIMER:
-    {
-
-        std::cout << "uwu" << std::endl;
-
-    }
-    break;
-
-    case WM_CLOSE:
-    {
-
-        PostQuitMessage(69);
-
-    }
-    break;
-
-    }
-
-    return DefWindowProc(hwnd, msg, wParam, lParam);
 }
