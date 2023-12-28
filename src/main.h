@@ -15,6 +15,15 @@
 //	window procedure / behavior
 LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
+	HDC hdc = GetDC(hwnd);
+	HCURSOR arrow_cursor = LoadCursorW(0, IDC_ARROW);
+	HCURSOR hand_cursor = LoadCursorW(0, IDC_HAND);
+
+	MenuButton newfilebtn = MenuButton(200, 50, NULL, NULL, 600, 600,
+		1, 1, NULL, NULL,
+		16, 0, L"Comic Sans MS",
+		RGB(40, 30, 199), RGB(100, 50, 20), RGB(210, 240, 255), hdc, L"meow");
+
 	switch (msg) {
 
 		case WM_CREATE:
@@ -36,7 +45,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		case WM_PAINT:
 		{
 
-			//
+			newfilebtn.drawBox();
 
 		}
 		break;
@@ -71,19 +80,26 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			WPARAM a = wParam;
 			short x = LOWORD(lParam);
 			short y = HIWORD(lParam);
-			if (a == MK_CONTROL) {
 
-				std::wstring titolo = L" X: " + std::to_wstring(x) + L" Y: " + std::to_wstring(y);
-				SetWindowText(hwnd, titolo.c_str());
+			if (
+					x > newfilebtn.getPosX() && 
+					y > newfilebtn.getPosY() &&
+					x < (newfilebtn.getPosX() + newfilebtn.getWidth()) &&
+					y < (newfilebtn.getPosY() + newfilebtn.getHeight())
+				)
+			{
+
+				SetWindowText(hwnd, L"uwu");
+				SetCursor(hand_cursor);
 
 			}
 			else {
 
-				SetWindowText(hwnd, L"bau");
-				HCURSOR cursor = LoadCursorW(0, IDC_ARROW);
-				SetCursor(cursor);
+				SetCursor(arrow_cursor);
 
 			}
+
+			if (a == MK_CONTROL) SetWindowText(hwnd, L"tft la mia vita");
 
 		}
 		break;
@@ -94,9 +110,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			short y = HIWORD(lParam);
 			std::wstring titolo = L" X: " + std::to_wstring(x) + L" Y: " + std::to_wstring(y);
 			SetWindowText(hwnd, titolo.c_str());
-
-			HCURSOR cursor = LoadCursorW(0, IDC_ARROW);
-			SetCursor(cursor);
+			SetCursor(arrow_cursor);
 
 		}
 		break;

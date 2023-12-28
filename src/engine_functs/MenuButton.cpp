@@ -41,8 +41,8 @@ void MenuButton::drawBox() {
 	//box 1 = new file
 	for (int i = 0; i < (width / 2); i++) SetPixel(hdc, posx - i, posy, MenuButton::border_color);
 	for (int i = 0; i < (width / 2); i++) SetPixel(hdc, posx + i, posy, MenuButton::border_color);
-	for (int i = 0; i < height; i++) SetPixel(hdc, posx - 105, posy + i, MenuButton::border_color);
-	for (int i = 0; i < height; i++) SetPixel(hdc, posx + 105, posy + i, MenuButton::border_color);
+	for (int i = 0; i < height + 1; i++) SetPixel(hdc, posx - (MenuButton::width / 2), posy + i, MenuButton::border_color);
+	for (int i = 0; i < height + 1; i++) SetPixel(hdc, posx + (MenuButton::width / 2), posy + i, MenuButton::border_color);
 	for (int i = 0; i < (width / 2); i++) SetPixel(hdc, posx - i, posy + height, MenuButton::border_color);
 	for (int i = 0; i < (width / 2); i++) SetPixel(hdc, posx + i, posy + height, MenuButton::border_color);
 
@@ -50,5 +50,32 @@ void MenuButton::drawBox() {
 	SetBkMode(hdc, TRANSPARENT);
 	RECT rect = { posx - (width / 2), posy,  posx + (width / 2), posy + height };
 	DrawText(hdc, MenuButton::text, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+}
+
+int MenuButton::getPosX() {
+
+	if (MenuButton::posx != NULL) return MenuButton::posx;
+	else return (MenuButton::windowwidth / 2) - (MenuButton::width / 2);
+
+}
+
+int MenuButton::getPosY() {
+
+	if (MenuButton::posy != NULL) return MenuButton::posy;
+	else return (MenuButton::windowheight / 2);
+	return MenuButton::posy;
+
+}
+
+int MenuButton::getWidth() {
+
+	return MenuButton::width;
+
+}
+
+int MenuButton::getHeight() {
+
+	return MenuButton::height;
 
 }

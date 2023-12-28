@@ -84,7 +84,7 @@ int WINAPI WinMain(
 
         HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
             windowClass.lpszClassName, L"Project Editor",
-            WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME,
+            WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU,
             500, 100, 600, 600,
             nullptr, nullptr, windowClass.hInstance, nullptr);
 

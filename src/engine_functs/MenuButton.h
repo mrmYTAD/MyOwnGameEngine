@@ -14,6 +14,11 @@ public:
 	);
 	void drawBox();
 
+	int getPosX();
+	int getPosY();
+	int getWidth();
+	int getHeight();
+
 private:
 
 	int width, height, posx, posy, windowwidth, windowheight, text_align, text_justify, icon_align, icon_justify;
