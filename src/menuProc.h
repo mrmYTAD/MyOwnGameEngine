@@ -46,6 +46,8 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		{
 
 			newfilebtn.drawBox();
+			for (int i = 0; i < 600; i++) SetPixel(hdc, i, 290, RGB(0, 0, 0));
+			for (int i = 0; i < 600; i++) SetPixel(hdc, 290, i, RGB(0, 0, 0));
 
 		}
 		break;
