@@ -10,6 +10,8 @@
 #include <thread>
 #include <gdiplus.h>
 
+#include <ShObjIdl.h>
+
 //this file contains functions used in the main file
 
 //	window procedure / behavior
@@ -122,39 +124,100 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				)
 			{
 
-				OPENFILENAME ofn;
-				WCHAR szFile[260] = { 0 };
+				IFileSaveDialog* pfd;
 
-				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
-				ofn.hwndOwner = hwnd;
-				ofn.lpstrFile = szFile;
-				ofn.nMaxFile = sizeof(szFile);
-				ofn.lpstrFilter = L"All\0*.*\0MOGEprj\0*.MOGE\0";
-				ofn.nFilterIndex = 1;
-				ofn.lpstrFileTitle = NULL;
-				ofn.nMaxFileTitle = 0;
-				ofn.lpstrInitialDir = NULL;
-				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+				// CoCreate the File Open Dialog object.
+				HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_ALL, IID_IFileSaveDialog, reinterpret_cast<void**>(&pfd));
 
-				if (GetOpenFileName(&ofn) == TRUE)
+				if (SUCCEEDED(hr))
 				{
-					char cStrFile[260];
-					wcstombs(cStrFile, szFile, wcslen(szFile) + 1);
+					// Set the options on the dialog.
+					DWORD dwFlags;
 
-					DestroyWindow(hwnd);
+					// Before setting, always get the options first in order 
+					// not to override existing options.
+					hr = pfd->GetOptions(&dwFlags);
+					if (SUCCEEDED(hr))
+					{
+						// In this case, get shell items only for file system items.
+						hr = pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
+						if (SUCCEEDED(hr))
+						{
+							// Set the file types to display only. Notice that, this is a 1-based array.
+							COMDLG_FILTERSPEC rgSpec[] =
+							{
+								{L"All Files", L"*.*"},
+								{L"MOCprj Files", L"*.MOC"}
+							};
+							hr = pfd->SetFileTypes(ARRAYSIZE(rgSpec), rgSpec);
+							if (SUCCEEDED(hr))
+							{
+								// Set the selected file type index to MOCprj for this example.
+								hr = pfd->SetFileTypeIndex(2);
+								if (SUCCEEDED(hr))
+								{
+									// Set the default extension to be ".MOC" file.
+									hr = pfd->SetDefaultExtension(L"MOC");
+									if (SUCCEEDED(hr))
+									{
+										// Set the default folder to the Desktop.
+										IShellItem* psi;
+										SHCreateItemFromParsingName(L"C:\\Users\\Matteo\\Desktop", NULL, IID_PPV_ARGS(&psi));
+										pfd->SetFolder(psi);
+										psi->Release();
 
-					std::string program = "C:\\Users\\Matteo\\Desktop\\prjs\\cpp\\MyOwnGameEngine\\MyOwnGameEngine\\x64\\Debug\\MyOwnGameEngine.exe";
-					std::string parameters = cStrFile;
+										// Show the dialog
+										hr = pfd->Show(NULL);
+										if (SUCCEEDED(hr))
+										{
+											// Obtain the result once the user clicks 
+											// the 'Save' button.
+											// The result is an IShellItem object.
+											IShellItem* psiResult;
+											hr = pfd->GetResult(&psiResult);
+											if (SUCCEEDED(hr))
+											{
+												// We are just going to print out the 
+												// name of the file for sample sake.
+												PWSTR pszFilePath = NULL;
+												hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
-					// Convert to wide strings
-					std::wstring wProgram(program.begin(), program.end());
-					std::wstring wParameters(parameters.begin(), parameters.end());
+												if (SUCCEEDED(hr))
+												{
+													// Create the file
+													std::wofstream file(pszFilePath);
+													file.close();
 
-					ShellExecute(NULL, L"open", wProgram.c_str(), wParameters.c_str(), NULL, SW_SHOW);
+													char cStrFile[260];
+													wcstombs(cStrFile, pszFilePath, wcslen(pszFilePath) + 1);
 
-					ExitProcess(69);
+													DestroyWindow(hwnd);
+
+													std::string program = "C:\\Users\\Matteo\\Desktop\\prjs\\cpp\\MyOwnCompiler\\x64\\Debug\\MyOwnCompiler.exe";
+													std::string parameters = cStrFile;
+
+													// Convert to wide strings
+													std::wstring wProgram(program.begin(), program.end());
+													std::wstring wParameters(parameters.begin(), parameters.end());
+
+													ShellExecute(NULL, L"open", wProgram.c_str(), wParameters.c_str(), NULL, SW_SHOW);
+
+													ExitProcess(69);
+
+													CoTaskMemFree(pszFilePath);
+												}
+
+												psiResult->Release();
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					pfd->Release();
 				}
+				CoUninitialize();
 
 			}
 
