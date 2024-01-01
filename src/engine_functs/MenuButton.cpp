@@ -46,9 +46,18 @@ void MenuButton::drawBox() {
 	for (int i = 0; i < (width / 2); i++) SetPixel(hdc, posx - i, posy + height, MenuButton::border_color);
 	for (int i = 0; i < (width / 2); i++) SetPixel(hdc, posx + i, posy + height, MenuButton::border_color);
 
-	SetTextColor(hdc, RGB(0, 0, 0));
+	SetTextColor(hdc, MenuButton::text_color);
 	SetBkMode(hdc, TRANSPARENT);
 	RECT rect = { posx - (width / 2), posy,  posx + (width / 2), posy + height };
+	
+	if (MenuButton::background_color != NULL) {
+
+		HBRUSH brush = CreateSolidBrush(MenuButton::background_color);
+		FillRect(hdc, &rect, brush);
+		DeleteObject(brush);
+
+	}
+
 	DrawText(hdc, MenuButton::text, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
 }
@@ -56,7 +65,7 @@ void MenuButton::drawBox() {
 int MenuButton::getPosX() {
 
 	if (MenuButton::posx != NULL) return MenuButton::posx;
-	else return (MenuButton::windowwidth / 2) - (MenuButton::width / 2);
+	else return (MenuButton::windowwidth / 2);
 
 }
 

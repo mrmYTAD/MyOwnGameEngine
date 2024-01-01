@@ -5,11 +5,11 @@ class MenuButton {
 
 public:
 
-	MenuButton(	// if align or justify > rect limit > align / justify = centered
+	MenuButton(
 		int width, int height, int posx, int posy, int windowwidth, int windowheight,
 		int text_aling, int text_justify, _In_opt_ int icon_align, _In_opt_ int icon_justify,
 		int font_width, int font_height, LPCWSTR font_family,
-		COLORREF border_color, COLORREF text_color, COLORREF background_color,
+		COLORREF border_color, COLORREF text_color, _In_opt_ COLORREF background_color,
 		HDC hdc, LPCWSTR text
 	);
 	void drawBox();

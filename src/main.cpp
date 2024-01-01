@@ -1,3 +1,14 @@
+//infos:
+
+/*
+
+MENU WINDOW
+    window width: 600
+    window height: 600 
+    resizable: false
+
+*/
+
 #include "include.h"
 #include "menuProc.h"
 #include "engineProc.h"
@@ -16,7 +27,7 @@ int main(int argc, char* argv[], char* env[]) {
 int WINAPI WinMain(
     _In_ HINSTANCE hInstance,
     _In_opt_ HINSTANCE hPrevInstance,
-    _In_ LPSTR lpCmdLine,
+    _In_opt_ LPSTR lpCmdLine,
     _In_ int nCmdShow
 ) {
     int argc;
