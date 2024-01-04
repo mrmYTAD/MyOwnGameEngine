@@ -10,9 +10,10 @@ public:
 		int text_aling, int text_justify, _In_opt_ int icon_align, _In_opt_ int icon_justify,
 		int font_width, int font_height, LPCWSTR font_family,
 		COLORREF border_color, COLORREF text_color, _In_opt_ COLORREF background_color,
+		COLORREF hover_border, COLORREF hover_text, COLORREF hover_bg,
 		HDC hdc, LPCWSTR text
 	);
-	void drawBox();
+	void drawBox(bool hovered);
 
 	int getPosX();
 	int getPosY();
@@ -22,7 +23,8 @@ public:
 private:
 
 	int width, height, posx, posy, windowwidth, windowheight, text_align, text_justify, icon_align, icon_justify;
-	COLORREF border_color, text_color, background_color;
+	COLORREF border_color, text_color, background_color,
+		hover_border, hover_text, hover_bg;
 	HFONT font;
 	LPCWSTR text;
 	HDC hdc;

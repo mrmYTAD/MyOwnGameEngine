@@ -12,6 +12,13 @@
 
 #include <ShObjIdl.h>
 
+bool isMouseOverButton(MenuButton& button, short x, short y) {
+	return x > (button.getPosX() - button.getWidth() / 2) &&
+		y > button.getPosY() &&
+		x < (button.getPosX() + button.getWidth() / 2) &&
+		y < (button.getPosY() + button.getHeight());
+}
+
 //this file contains functions used in the main file
 
 //	window procedure / behavior
@@ -24,18 +31,20 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	MenuButton newfilebtn = MenuButton(
 		200, 50, 140, 60, 600, 600,
 		1, 1, NULL, NULL,
-		16, 0, L"Comic Sans MS",
-		RGB(40, 30, 199), RGB(30, 30, 28), RGB(210, 240, 255),
+		22, NULL, L"Comic Sans MS",
+		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
+		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
 		//border, text, background
 		hdc, L"NEW FILE"
 	);
 	MenuButton openfilebtn = MenuButton(
 		200, 50, 140, 120, 600, 600,
 		1, 1, NULL, NULL,
-		16, 0, L"Comic Sans MS",
-		RGB(40, 30, 199), RGB(30, 30, 28), RGB(210, 240, 255),
+		22, NULL, L"Comic Sans MS",
+		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
+		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
 		//border, text, background
-		hdc, L"OPEN FIlE"
+		hdc, L"OPEN FILE"
 	);
 
 	switch (msg) {
@@ -48,6 +57,18 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		}
 		break;
 
+		case WM_ERASEBKGND:
+		{
+
+			RECT rect = { 0, 0, 600, 600 };
+			HBRUSH brush = CreateSolidBrush( RGB(238, 130, 238) );
+			FillRect(hdc, &rect, brush);
+
+			UpdateWindow(hwnd);
+			return TRUE;
+		}
+		break;
+
 		case WM_TIMER:
 		{
 
@@ -56,26 +77,25 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		}
 		break;
 
-		case WM_PAINT:
+		case WM_MOVE:
 		{
 
-			newfilebtn.drawBox();
-			openfilebtn.drawBox();
-			SetPixel(hdc, newfilebtn.getPosX(), newfilebtn.getPosY(), RGB(255, 0, 0));
-			for (int i = 0; i < 600; i++) SetPixel(hdc, i, 290, RGB(255, 255, 255));
-			for (int i = 0; i < 600; i++) SetPixel(hdc, 290, i, RGB(255, 255, 255));
+			InvalidateRect(hwnd, NULL, TRUE);
+
+			UpdateWindow(hwnd);
 
 		}
 		break;
 
-		case WM_ERASEBKGND:
+		case WM_PAINT:
 		{
-
-			RECT rect = {
-				0, 0, 600, 600
-			};
-			HBRUSH brush = CreateSolidBrush(RGB(15, 4, 35));
-			FillRect(hdc, &rect, brush);
+			PAINTSTRUCT ps;
+			BeginPaint(hwnd, &ps);
+			newfilebtn.drawBox(false);
+			openfilebtn.drawBox(false);
+			for (int i = 0; i < 600; i++) SetPixel(hdc, i, 290, RGB(255, 255, 255));
+			for (int i = 0; i < 600; i++) SetPixel(hdc, 290, i, RGB(255, 255, 255));
+			EndPaint(hwnd, &ps);
 
 		}
 		break;
@@ -111,33 +131,19 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			short x = LOWORD(lParam);
 			short y = HIWORD(lParam);
 
-			if (
-					x > (newfilebtn.getPosX() - newfilebtn.getWidth() / 2) && 
-					y > newfilebtn.getPosY() &&
-					x < (newfilebtn.getPosX() + newfilebtn.getWidth() / 2) &&
-					y < (newfilebtn.getPosY() + newfilebtn.getHeight())
-				)
-			{
-
+			if (isMouseOverButton(newfilebtn, x, y)) {
+				newfilebtn.drawBox(true);
 				SetWindowText(hwnd, L"uwu");
 				SetCursor(hand_cursor);
-
 			}
-			else if (
-				x > (openfilebtn.getPosX() - openfilebtn.getWidth() / 2) &&
-				y > openfilebtn.getPosY() &&
-				x < (openfilebtn.getPosX() + openfilebtn.getWidth() / 2) &&
-				y < (openfilebtn.getPosY() + openfilebtn.getHeight())
-				) 
-			{
-
+			else if (isMouseOverButton(openfilebtn, x, y)) {
+				openfilebtn.drawBox(true);
 				SetCursor(hand_cursor);
-
 			}
 			else {
-
 				SetCursor(arrow_cursor);
-
+				newfilebtn.drawBox(false);
+				openfilebtn.drawBox(false);
 			}
 
 			if (a == MK_CONTROL) SetWindowText(hwnd, L"tft la mia vita");
@@ -153,12 +159,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			SetWindowText(hwnd, titolo.c_str());
 			SetCursor(arrow_cursor);
 
-			if (
-				x > (newfilebtn.getPosX() - newfilebtn.getWidth() / 2) &&
-				y > newfilebtn.getPosY() &&
-				x < (newfilebtn.getPosX() + newfilebtn.getWidth() / 2) &&
-				y < (newfilebtn.getPosY() + newfilebtn.getHeight())
-				)
+			if (isMouseOverButton(newfilebtn, x, y))
 			{
 
 				IFileSaveDialog* pfd;
@@ -184,7 +185,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 							COMDLG_FILTERSPEC rgSpec[] =
 							{
 								{L"All Files", L"*.*"},
-								{L"MOCprj Files", L"*.MOC"}
+								{L"MOGEprj Files", L"*.MOGE"}
 							};
 							hr = pfd->SetFileTypes(ARRAYSIZE(rgSpec), rgSpec);
 							if (SUCCEEDED(hr))
@@ -194,7 +195,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 								if (SUCCEEDED(hr))
 								{
 									// Set the default extension to be ".MOC" file.
-									hr = pfd->SetDefaultExtension(L"MOC");
+									hr = pfd->SetDefaultExtension(L"MOGE");
 									if (SUCCEEDED(hr))
 									{
 										// Set the default folder to the Desktop.
@@ -257,12 +258,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				CoUninitialize();
 
 			}
-			if (
-				x > openfilebtn.getPosX() &&
-				y > openfilebtn.getPosY() &&
-				x < (openfilebtn.getPosX() + openfilebtn.getWidth()) &&
-				y < (openfilebtn.getPosY() + openfilebtn.getHeight())
-				) {
+			if (isMouseOverButton(openfilebtn, x, y)) {
 
 				OPENFILENAME ofn;
 				WCHAR szFile[260] = { 0 };
