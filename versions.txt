@@ -6,3 +6,7 @@ vAS 0.0.0.1:
 	- created minimize and close buttons.
 	- fixed a bug when if a window gets spam minimized-restored everything becomes white.
 	- created this file.
+	- made window draggable
+	- fixed a bug when while the window was dragged all the content inside was blinking
+	- made the menuProc to search for the desktop folder for every user
+	- some fixes and optimizations to make the program less heavy for the hardware

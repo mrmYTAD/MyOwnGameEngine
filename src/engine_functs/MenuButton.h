@@ -13,7 +13,7 @@ public:
 		int font_width, int font_height, LPCWSTR font_family,
 		COLORREF border_color, COLORREF text_color, _In_opt_ COLORREF background_color,
 		COLORREF hover_border, COLORREF hover_text, COLORREF hover_bg,
-		HDC hdc, LPCWSTR text
+		_In_opt_ HDC hdc, LPCWSTR text
 	);
 	void drawBox(bool hovered);
 
@@ -21,6 +21,8 @@ public:
 	int getPosY();
 	int getWidth();
 	int getHeight();
+
+	void setHDC(HDC hdc);
 
 private:
 

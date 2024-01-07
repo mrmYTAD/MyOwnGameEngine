@@ -92,7 +92,7 @@ int WINAPI WinMain(
         HWND hwnd = CreateWindowEx(
             WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
             windowClass.lpszClassName, L"Project Editor",
-            WS_POPUP, // Use WS_POPUP style to create a window without a title bar
+            WS_POPUP,
             500, 100, 600, 600,
             nullptr, nullptr, windowClass.hInstance, nullptr
         );

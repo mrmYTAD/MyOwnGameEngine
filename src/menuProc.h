@@ -11,62 +11,74 @@
 #include <gdiplus.h>
 
 #include <ShObjIdl.h>
+#include <shlobj.h>
 
 bool isMouseOverButton(MenuButton& button, short x, short y) {
-	return x > (button.getPosX() - button.getWidth() / 2) &&
+
+	return 
+		x > (button.getPosX() - button.getWidth() / 2) &&
 		y > button.getPosY() &&
 		x < (button.getPosX() + button.getWidth() / 2) &&
 		y < (button.getPosY() + button.getHeight());
+
 }
+
 bool isMouseOverNewFileBtn = false;
 bool isMouseOverOpenFileBtn = false;
 bool isMouseOverExitBtn = false;
 bool isMouseOverMinimizeBtn = false;
+BOOL isDragging = FALSE;
+HCURSOR arrow_cursor = LoadCursorW(0, IDC_ARROW);
+HCURSOR hand_cursor = LoadCursorW(0, IDC_HAND);
+
+MenuButton newfilebtn = MenuButton(
+	200, 50, 140, 60, 600, 600,
+	1, 1, NULL, NULL,
+	22, NULL, L"Comic Sans MS",
+	RGB(255, 245, 245), RGB(255, 240, 240), RGB(15, 15, 8),
+	RGB(238, 130, 238), RGB(238, 130, 238), RGB(24, 21, 38),
+	//border, text, background
+	NULL, L"NEW FILE"
+);
+MenuButton openfilebtn = MenuButton(
+	200, 50, 140, 120, 600, 600,
+	1, 1, NULL, NULL,
+	22, NULL, L"Comic Sans MS",
+	RGB(0, 250, 0), RGB(0, 220, 0), RGB(15, 10, 10),
+	RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
+	//border, text, background
+	NULL, L"OPEN FILE"
+);
+MenuButton exitbtn = MenuButton(
+	40, 30, 600 - 20, -1, 600, 600,
+	1, 1, NULL, NULL,
+	22, NULL, L"Comic Sans MS",
+	RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
+	RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
+	//border, text, background
+	NULL, L" X"
+);
+MenuButton minimizebtn = MenuButton(
+	40, 30, 600 - 60 - 20, -1, 600, 600,
+	1, 1, NULL, NULL,
+	22, NULL, L"Comic Sans MS",
+	RGB(250, 220, 230), RGB(250, 220, 230), RGB(238, 130, 238),
+	RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
+	//border, text, background
+	NULL, L" -"
+);
+
 //this file contains functions used in the main file
 
 //	window procedure / behavior
 LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
 	HDC hdc = GetDC(hwnd);
-	HCURSOR arrow_cursor = LoadCursorW(0, IDC_ARROW);
-	HCURSOR hand_cursor = LoadCursorW(0, IDC_HAND);
 
-	MenuButton newfilebtn = MenuButton(
-		200, 50, 140, 60, 600, 600,
-		1, 1, NULL, NULL,
-		22, NULL, L"Comic Sans MS",
-		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
-		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
-		//border, text, background
-		hdc, L"NEW FILE"
-	);
-	MenuButton openfilebtn = MenuButton(
-		200, 50, 140, 120, 600, 600,
-		1, 1, NULL, NULL,
-		22, NULL, L"Comic Sans MS",
-		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
-		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
-		//border, text, background
-		hdc, L"OPEN FILE"
-	);
-	MenuButton exitbtn = MenuButton(
-		40, 30, 600-20, -1, 600, 600,
-		1, 1, NULL, NULL,
-		22, NULL, L"Comic Sans MS",
-		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
-		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
-		//border, text, background
-		hdc, L" X"
-	);
-	MenuButton minimizebtn = MenuButton(
-		40, 30, 600 - 60 - 20, -1, 600, 600,
-		1, 1, NULL, NULL,
-		22, NULL, L"Comic Sans MS",
-		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
-		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
-		//border, text, background
-		hdc, L" -"
-	);
+	newfilebtn.setHDC(hdc);
+	openfilebtn.setHDC(hdc);
+	exitbtn.setHDC(hdc);
+	minimizebtn.setHDC(hdc);
 
 	switch (msg) {
 
@@ -101,7 +113,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		{
 
 			RECT rect = { 0, 0, 600, 600 };
-			HBRUSH brush = CreateSolidBrush( RGB(238, 130, 238) );
+			HBRUSH brush = CreateSolidBrush( RGB(8, 7, 13) );
 			FillRect(hdc, &rect, brush);
 			DeleteObject(brush);
 			UpdateWindow(hwnd);
@@ -112,10 +124,35 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		case WM_MOVE:
 		{
 
-			InvalidateRect(hwnd, NULL, TRUE);
+			if (!isDragging)
+			{
+				InvalidateRect(hwnd, NULL, TRUE);
+				UpdateWindow(hwnd);
+			}
 
-			UpdateWindow(hwnd);
+		}
+		break;
 
+		case WM_NCHITTEST:
+		{
+
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+
+			POINT pt;
+			pt.x = x;
+			pt.y = y;
+			ScreenToClient(hwnd, &pt);
+
+			if (pt.y < 30 && pt.x < 30)
+			{
+				isDragging = TRUE;
+				return HTCAPTION;
+			}
+			else
+			{
+				return DefWindowProc(hwnd, msg, wParam, lParam);
+			}
 		}
 		break;
 
@@ -129,6 +166,12 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			minimizebtn.drawBox(false);
 			for (int i = 0; i < 600; i++) SetPixel(hdc, i, 290, RGB(255, 255, 255));
 			for (int i = 0; i < 600; i++) SetPixel(hdc, 290, i, RGB(255, 255, 255));
+			for (int i = 0; i < 30; i++) {
+
+				for (int j = 0; j < 30; j++) SetPixel(hdc, i, j, RGB(200, 0, 0));
+
+			}
+
 			EndPaint(hwnd, &ps);
 
 		}
@@ -206,27 +249,26 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (isMouseOverButton(newfilebtn, x, y))
 			{
+				TCHAR szDesktopPath[MAX_PATH];
+				if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, szDesktopPath)))
+				{
+					// szDesktopPath now contains the path to the Desktop folder
+				}
 
 				IFileSaveDialog* pfd;
 
-				// CoCreate the File Open Dialog object.
 				HRESULT hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_ALL, IID_IFileSaveDialog, reinterpret_cast<void**>(&pfd));
 
 				if (SUCCEEDED(hr))
 				{
-					// Set the options on the dialog.
 					DWORD dwFlags;
 
-					// Before setting, always get the options first in order 
-					// not to override existing options.
 					hr = pfd->GetOptions(&dwFlags);
 					if (SUCCEEDED(hr))
 					{
-						// In this case, get shell items only for file system items.
 						hr = pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
 						if (SUCCEEDED(hr))
 						{
-							// Set the file types to display only. Notice that, this is a 1-based array.
 							COMDLG_FILTERSPEC rgSpec[] =
 							{
 								{L"All Files", L"*.*"},
@@ -235,39 +277,29 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 							hr = pfd->SetFileTypes(ARRAYSIZE(rgSpec), rgSpec);
 							if (SUCCEEDED(hr))
 							{
-								// Set the selected file type index to MOCprj for this example.
 								hr = pfd->SetFileTypeIndex(2);
 								if (SUCCEEDED(hr))
 								{
-									// Set the default extension to be ".MOC" file.
 									hr = pfd->SetDefaultExtension(L"MOGE");
 									if (SUCCEEDED(hr))
 									{
-										// Set the default folder to the Desktop.
 										IShellItem* psi;
-										SHCreateItemFromParsingName(L"C:\\Users\\Matteo\\Desktop", NULL, IID_PPV_ARGS(&psi));
+										SHCreateItemFromParsingName(szDesktopPath, NULL, IID_PPV_ARGS(&psi));
 										pfd->SetFolder(psi);
 										psi->Release();
 
-										// Show the dialog
 										hr = pfd->Show(NULL);
 										if (SUCCEEDED(hr))
 										{
-											// Obtain the result once the user clicks 
-											// the 'Save' button.
-											// The result is an IShellItem object.
 											IShellItem* psiResult;
 											hr = pfd->GetResult(&psiResult);
 											if (SUCCEEDED(hr))
 											{
-												// We are just going to print out the 
-												// name of the file for sample sake.
 												PWSTR pszFilePath = NULL;
 												hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 
 												if (SUCCEEDED(hr))
 												{
-													// Create the file
 													std::wofstream file(pszFilePath);
 													file.close();
 
@@ -279,7 +311,6 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 													std::string program = "C:\\Users\\Matteo\\Desktop\\prjs\\cpp\\MyOwnGameEngine\\MyOwnGameEngine\\x64\\Debug\\MyOwnGameEngine.exe";
 													std::string parameters = cStrFile;
 
-													// Convert to wide strings
 													std::wstring wProgram(program.begin(), program.end());
 													std::wstring wParameters(parameters.begin(), parameters.end());
 
@@ -328,7 +359,6 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 					std::string program = "C:\\Users\\Matteo\\Desktop\\prjs\\cpp\\MyOwnGameEngine\\MyOwnGameEngine\\x64\\Debug\\MyOwnGameEngine.exe";
 					std::string parameters = cStrFile;
 
-					// Convert to wide strings
 					std::wstring wProgram(program.begin(), program.end());
 					std::wstring wParameters(parameters.begin(), parameters.end());
 
