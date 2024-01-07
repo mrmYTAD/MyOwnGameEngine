@@ -5,6 +5,8 @@ class MenuButton {
 
 public:
 
+	MenuButton();
+
 	MenuButton(
 		int width, int height, int posx, int posy, int windowwidth, int windowheight,
 		int text_aling, int text_justify, _In_opt_ int icon_align, _In_opt_ int icon_justify,

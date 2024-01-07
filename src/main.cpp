@@ -89,11 +89,13 @@ int WINAPI WinMain(
 
         RegisterClassEx(&windowClass);
 
-        HWND hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
-            windowClass.lpszClassName, L"MOGE menu",
-            WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU,
+        HWND hwnd = CreateWindowEx(
+            WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
+            windowClass.lpszClassName, L"Project Editor",
+            WS_POPUP, // Use WS_POPUP style to create a window without a title bar
             500, 100, 600, 600,
-            nullptr, nullptr, windowClass.hInstance, nullptr);
+            nullptr, nullptr, windowClass.hInstance, nullptr
+        );
 
         ShowWindow(hwnd, 10);
 

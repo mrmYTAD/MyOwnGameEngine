@@ -18,7 +18,10 @@ bool isMouseOverButton(MenuButton& button, short x, short y) {
 		x < (button.getPosX() + button.getWidth() / 2) &&
 		y < (button.getPosY() + button.getHeight());
 }
-
+bool isMouseOverNewFileBtn = false;
+bool isMouseOverOpenFileBtn = false;
+bool isMouseOverExitBtn = false;
+bool isMouseOverMinimizeBtn = false;
 //this file contains functions used in the main file
 
 //	window procedure / behavior
@@ -46,13 +49,50 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		//border, text, background
 		hdc, L"OPEN FILE"
 	);
+	MenuButton exitbtn = MenuButton(
+		40, 30, 600-20, -1, 600, 600,
+		1, 1, NULL, NULL,
+		22, NULL, L"Comic Sans MS",
+		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
+		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
+		//border, text, background
+		hdc, L" X"
+	);
+	MenuButton minimizebtn = MenuButton(
+		40, 30, 600 - 60 - 20, -1, 600, 600,
+		1, 1, NULL, NULL,
+		22, NULL, L"Comic Sans MS",
+		RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
+		RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
+		//border, text, background
+		hdc, L" -"
+	);
 
 	switch (msg) {
 
 		case WM_CREATE:
 		{
 
-			SetTimer(hwnd, 1, 20, NULL);
+			SendMessage(hwnd, WM_PAINT, 0, 0);
+
+		}
+		break;
+
+		case WM_SYSCOMMAND:
+		{
+
+			switch (wParam) {
+
+				case SC_RESTORE:
+				{
+
+					InvalidateRect(hwnd, NULL, TRUE);
+					SendMessage(hwnd, PRF_ERASEBKGND, 0, 0);
+					UpdateWindow(hwnd);
+
+				}
+				break;
+			}
 
 		}
 		break;
@@ -63,17 +103,9 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			RECT rect = { 0, 0, 600, 600 };
 			HBRUSH brush = CreateSolidBrush( RGB(238, 130, 238) );
 			FillRect(hdc, &rect, brush);
-
+			DeleteObject(brush);
 			UpdateWindow(hwnd);
 			return TRUE;
-		}
-		break;
-
-		case WM_TIMER:
-		{
-
-			//
-
 		}
 		break;
 
@@ -93,33 +125,11 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			BeginPaint(hwnd, &ps);
 			newfilebtn.drawBox(false);
 			openfilebtn.drawBox(false);
+			exitbtn.drawBox(false);
+			minimizebtn.drawBox(false);
 			for (int i = 0; i < 600; i++) SetPixel(hdc, i, 290, RGB(255, 255, 255));
 			for (int i = 0; i < 600; i++) SetPixel(hdc, 290, i, RGB(255, 255, 255));
 			EndPaint(hwnd, &ps);
-
-		}
-		break;
-
-		case WM_DROPFILES:
-		{
-			const wchar_t* a = L"default value";
-
-			HDROP hDrop = (HDROP)wParam;
-			UINT nNumFilesDropped = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
-
-			for (UINT i = 0; i < nNumFilesDropped; i++)
-			{
-				TCHAR szFilePath[MAX_PATH];
-				DragQueryFile(hDrop, i, szFilePath, MAX_PATH);
-
-				a = szFilePath;
-				char buffer[1024];
-				wcstombs(buffer, a, sizeof(buffer));
-			}
-
-			std::wcout << a << std::endl;
-
-			DragFinish(hDrop);
 
 		}
 		break;
@@ -131,19 +141,40 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			short x = LOWORD(lParam);
 			short y = HIWORD(lParam);
 
-			if (isMouseOverButton(newfilebtn, x, y)) {
-				newfilebtn.drawBox(true);
-				SetWindowText(hwnd, L"uwu");
-				SetCursor(hand_cursor);
+			bool isCurrentlyOverNewFileBtn = isMouseOverButton(newfilebtn, x, y);
+			bool isCurrentlyOverOpenFileBtn = isMouseOverButton(openfilebtn, x, y);
+			bool isCurrentlyOverExitBtn = isMouseOverButton(exitbtn, x, y);
+			bool isCurrentlyOverMinimizeBtn = isMouseOverButton(minimizebtn, x, y);
+
+			if (isCurrentlyOverNewFileBtn != isMouseOverNewFileBtn) {
+				newfilebtn.drawBox(isCurrentlyOverNewFileBtn);
+				isMouseOverNewFileBtn = isCurrentlyOverNewFileBtn;
 			}
-			else if (isMouseOverButton(openfilebtn, x, y)) {
-				openfilebtn.drawBox(true);
+
+			if (isCurrentlyOverOpenFileBtn != isMouseOverOpenFileBtn) {
+				openfilebtn.drawBox(isCurrentlyOverOpenFileBtn);
+				isMouseOverOpenFileBtn = isCurrentlyOverOpenFileBtn;
+			}
+
+			if (isCurrentlyOverExitBtn != isMouseOverExitBtn) {
+				exitbtn.drawBox(isCurrentlyOverExitBtn);
+				isMouseOverExitBtn = isCurrentlyOverExitBtn;
+			}
+
+			if (isCurrentlyOverMinimizeBtn != isMouseOverMinimizeBtn) {
+				minimizebtn.drawBox(isCurrentlyOverMinimizeBtn);
+				isMouseOverMinimizeBtn = isCurrentlyOverMinimizeBtn;
+			}
+
+			if (
+				isCurrentlyOverNewFileBtn ||
+				isCurrentlyOverOpenFileBtn ||
+				isCurrentlyOverExitBtn
+				) {
 				SetCursor(hand_cursor);
 			}
 			else {
 				SetCursor(arrow_cursor);
-				newfilebtn.drawBox(false);
-				openfilebtn.drawBox(false);
 			}
 
 			if (a == MK_CONTROL) SetWindowText(hwnd, L"tft la mia vita");
@@ -158,6 +189,20 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			std::wstring titolo = L" X: " + std::to_wstring(x) + L" Y: " + std::to_wstring(y);
 			SetWindowText(hwnd, titolo.c_str());
 			SetCursor(arrow_cursor);
+
+			if (isMouseOverButton(exitbtn, x, y)) {
+
+				SendMessage(hwnd, WM_CLOSE, 0, 0);
+				break;
+
+			}
+
+			if (isMouseOverButton(minimizebtn, x, y)) {
+
+				SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+				break;
+
+			}
 
 			if (isMouseOverButton(newfilebtn, x, y))
 			{
@@ -300,6 +345,30 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		case WM_CLOSE:
 		{
 			PostQuitMessage(69);
+		}
+		break;
+
+		case WM_DROPFILES:
+		{
+			const wchar_t* a = L"default value";
+
+			HDROP hDrop = (HDROP)wParam;
+			UINT nNumFilesDropped = DragQueryFile(hDrop, 0xFFFFFFFF, NULL, 0);
+
+			for (UINT i = 0; i < nNumFilesDropped; i++)
+			{
+				TCHAR szFilePath[MAX_PATH];
+				DragQueryFile(hDrop, i, szFilePath, MAX_PATH);
+
+				a = szFilePath;
+				char buffer[1024];
+				wcstombs(buffer, a, sizeof(buffer));
+			}
+
+			std::wcout << a << std::endl;
+
+			DragFinish(hDrop);
+
 		}
 		break;
 

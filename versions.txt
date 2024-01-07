@@ -1,0 +1,8 @@
+/!\ not all updates are written here.
+
+vAS 0.0.0.0:
+	- core code created, including main, winmain, wndprocedures, and opening different windows based on if a file is passed or not.
+vAS 0.0.0.1:
+	- created minimize and close buttons.
+	- fixed a bug when if a window gets spam minimized-restored everything becomes white.
+	- created this file.
