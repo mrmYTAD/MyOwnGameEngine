@@ -27,6 +27,7 @@ bool isMouseOverNewFileBtn = false;
 bool isMouseOverOpenFileBtn = false;
 bool isMouseOverExitBtn = false;
 bool isMouseOverMinimizeBtn = false;
+bool isMouseOverSettingsBtn = false;
 BOOL isDragging = FALSE;
 HCURSOR arrow_cursor = LoadCursorW(0, IDC_ARROW);
 HCURSOR hand_cursor = LoadCursorW(0, IDC_HAND);
@@ -59,7 +60,7 @@ MenuButton exitbtn = MenuButton(
 	NULL, L" X"
 );
 MenuButton minimizebtn = MenuButton(
-	40, 30, 600 - 60 - 20, -1, 600, 600,
+	40, 30, 520, -1, 600, 600,
 	1, 1, NULL, NULL,
 	22, NULL, L"Comic Sans MS",
 	RGB(250, 220, 230), RGB(250, 220, 230), RGB(238, 130, 238),
@@ -67,6 +68,18 @@ MenuButton minimizebtn = MenuButton(
 	//border, text, background
 	NULL, L" -"
 );
+
+MenuButton settingsbtn = MenuButton(
+	30, 30, 550, 70, 600, 600,
+	1, 1, NULL, NULL,
+	22, NULL, L"Comic Sans MS",
+	RGB(250, 220, 230), RGB(250, 220, 230), RGB(238, 130, 238),
+	RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
+	//border, text, background
+	NULL, L" ST"
+);
+
+TCHAR szDesktopPath[MAX_PATH];
 
 //this file contains functions used in the main file
 
@@ -79,6 +92,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 	openfilebtn.setHDC(hdc);
 	exitbtn.setHDC(hdc);
 	minimizebtn.setHDC(hdc);
+	settingsbtn.setHDC(hdc);
 
 	switch (msg) {
 
@@ -86,6 +100,11 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 		{
 
 			SendMessage(hwnd, WM_PAINT, 0, 0);
+
+			if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, szDesktopPath)))
+			{
+				// szDesktopPath now contains the path to the Desktop folder
+			}
 
 		}
 		break;
@@ -116,6 +135,13 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			HBRUSH brush = CreateSolidBrush( RGB(8, 7, 13) );
 			FillRect(hdc, &rect, brush);
 			DeleteObject(brush);
+
+			for (int i = 0; i < 600; i++) {
+
+				for (int j = 0; j < 30; j++) SetPixel(hdc, i, j, RGB(200, 0, 0));
+
+			}
+
 			UpdateWindow(hwnd);
 			return TRUE;
 		}
@@ -144,7 +170,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			pt.y = y;
 			ScreenToClient(hwnd, &pt);
 
-			if (pt.y < 30 && pt.x < 30)
+			if (pt.y < 30 && pt.x < minimizebtn.getPosX())
 			{
 				isDragging = TRUE;
 				return HTCAPTION;
@@ -164,13 +190,10 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			openfilebtn.drawBox(false);
 			exitbtn.drawBox(false);
 			minimizebtn.drawBox(false);
+			settingsbtn.drawBox(false);
+
 			for (int i = 0; i < 600; i++) SetPixel(hdc, i, 290, RGB(255, 255, 255));
 			for (int i = 0; i < 600; i++) SetPixel(hdc, 290, i, RGB(255, 255, 255));
-			for (int i = 0; i < 30; i++) {
-
-				for (int j = 0; j < 30; j++) SetPixel(hdc, i, j, RGB(200, 0, 0));
-
-			}
 
 			EndPaint(hwnd, &ps);
 
@@ -188,6 +211,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			bool isCurrentlyOverOpenFileBtn = isMouseOverButton(openfilebtn, x, y);
 			bool isCurrentlyOverExitBtn = isMouseOverButton(exitbtn, x, y);
 			bool isCurrentlyOverMinimizeBtn = isMouseOverButton(minimizebtn, x, y);
+			bool isCurrentlyOverSettingsBtn = isMouseOverButton(settingsbtn, x, y);
 
 			if (isCurrentlyOverNewFileBtn != isMouseOverNewFileBtn) {
 				newfilebtn.drawBox(isCurrentlyOverNewFileBtn);
@@ -209,10 +233,17 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				isMouseOverMinimizeBtn = isCurrentlyOverMinimizeBtn;
 			}
 
+			if (isCurrentlyOverSettingsBtn != isMouseOverSettingsBtn) {
+				minimizebtn.drawBox(isCurrentlyOverMinimizeBtn);
+				isMouseOverSettingsBtn = isCurrentlyOverSettingsBtn;
+			}
+
 			if (
 				isCurrentlyOverNewFileBtn ||
 				isCurrentlyOverOpenFileBtn ||
-				isCurrentlyOverExitBtn
+				isCurrentlyOverExitBtn ||
+				isCurrentlyOverMinimizeBtn ||
+				isCurrentlyOverSettingsBtn
 				) {
 				SetCursor(hand_cursor);
 			}
@@ -249,11 +280,6 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			if (isMouseOverButton(newfilebtn, x, y))
 			{
-				TCHAR szDesktopPath[MAX_PATH];
-				if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, szDesktopPath)))
-				{
-					// szDesktopPath now contains the path to the Desktop folder
-				}
 
 				IFileSaveDialog* pfd;
 
@@ -348,7 +374,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				ofn.nFilterIndex = 1;
 				ofn.lpstrFileTitle = NULL;
 				ofn.nMaxFileTitle = 0;
-				ofn.lpstrInitialDir = L"C:\\Users\\Matteo\\Desktop";
+				ofn.lpstrInitialDir = szDesktopPath;
 				ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 				if (GetOpenFileName(&ofn) == TRUE)
@@ -356,18 +382,20 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 					char cStrFile[260];
 					wcstombs(cStrFile, szFile, wcslen(szFile) + 1);
 
-					std::string program = "C:\\Users\\Matteo\\Desktop\\prjs\\cpp\\MyOwnGameEngine\\MyOwnGameEngine\\x64\\Debug\\MyOwnGameEngine.exe";
-					std::string parameters = cStrFile;
+					TCHAR szPath[MAX_PATH];
+					if (0 != GetModuleFileName(NULL, szPath, MAX_PATH))
+					{
+						std::wstring wProgram(szPath);
+						std::string parameters = cStrFile;
+						std::wstring wParameters(parameters.begin(), parameters.end());
 
-					std::wstring wProgram(program.begin(), program.end());
-					std::wstring wParameters(parameters.begin(), parameters.end());
-
-					ShellExecute(NULL, L"open", wProgram.c_str(), wParameters.c_str(), NULL, SW_SHOW);
+						ShellExecute(NULL, L"open", wProgram.c_str(), wParameters.c_str(), NULL, SW_SHOW);
+					}
 
 					ExitProcess(69);
 				}
 
-				}
+			}
 
 		}
 		break;
