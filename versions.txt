@@ -10,3 +10,6 @@ vAS 0.0.0.1:
 	- fixed a bug when while the window was dragged all the content inside was blinking
 	- made the menuProc to search for the desktop folder for every user
 	- some fixes and optimizations to make the program less heavy for the hardware
+vAS 0.0.0.2:
+	- settings window
+	- little changes on how the code is managed (still horrible, maybe even worst)

@@ -15,7 +15,10 @@ public:
 		COLORREF hover_border, COLORREF hover_text, COLORREF hover_bg,
 		_In_opt_ HDC hdc, LPCWSTR text
 	);
+
 	void drawBox(bool hovered);
+
+	bool isMouseOverButton(short x, short y);
 
 	int getPosX();
 	int getPosY();

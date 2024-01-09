@@ -123,3 +123,13 @@ void MenuButton::setHDC(HDC hdc) {
 	MenuButton::hdc = hdc;
 
 }
+
+bool MenuButton::isMouseOverButton(short x, short y) {
+
+	return
+		x > (MenuButton::getPosX() - MenuButton::getWidth() / 2) &&
+		y > MenuButton::getPosY() &&
+		x < (MenuButton::getPosX() + MenuButton::getWidth() / 2) &&
+		y < (MenuButton::getPosY() + MenuButton::getHeight());
+
+}

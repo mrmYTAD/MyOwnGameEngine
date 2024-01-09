@@ -9,28 +9,10 @@
 #include <chrono>
 #include <thread>
 #include <gdiplus.h>
-
 #include <ShObjIdl.h>
 #include <shlobj.h>
 
-bool isMouseOverButton(MenuButton& button, short x, short y) {
-
-	return 
-		x > (button.getPosX() - button.getWidth() / 2) &&
-		y > button.getPosY() &&
-		x < (button.getPosX() + button.getWidth() / 2) &&
-		y < (button.getPosY() + button.getHeight());
-
-}
-
-bool isMouseOverNewFileBtn = false;
-bool isMouseOverOpenFileBtn = false;
-bool isMouseOverExitBtn = false;
-bool isMouseOverMinimizeBtn = false;
-bool isMouseOverSettingsBtn = false;
-BOOL isDragging = FALSE;
-HCURSOR arrow_cursor = LoadCursorW(0, IDC_ARROW);
-HCURSOR hand_cursor = LoadCursorW(0, IDC_HAND);
+#include "engine_functs/SettingsWindow.h"
 
 MenuButton newfilebtn = MenuButton(
 	200, 50, 140, 60, 600, 600,
@@ -41,6 +23,7 @@ MenuButton newfilebtn = MenuButton(
 	//border, text, background
 	NULL, L"NEW FILE"
 );
+
 MenuButton openfilebtn = MenuButton(
 	200, 50, 140, 120, 600, 600,
 	1, 1, NULL, NULL,
@@ -49,24 +32,6 @@ MenuButton openfilebtn = MenuButton(
 	RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
 	//border, text, background
 	NULL, L"OPEN FILE"
-);
-MenuButton exitbtn = MenuButton(
-	40, 30, 600 - 20, -1, 600, 600,
-	1, 1, NULL, NULL,
-	22, NULL, L"Comic Sans MS",
-	RGB(250, 220, 230), RGB(250, 220, 230), RGB(25, 14, 45),
-	RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
-	//border, text, background
-	NULL, L" X"
-);
-MenuButton minimizebtn = MenuButton(
-	40, 30, 520, -1, 600, 600,
-	1, 1, NULL, NULL,
-	22, NULL, L"Comic Sans MS",
-	RGB(250, 220, 230), RGB(250, 220, 230), RGB(238, 130, 238),
-	RGB(15, 15, 8), RGB(10, 10, 40), RGB(255, 209, 220),
-	//border, text, background
-	NULL, L" -"
 );
 
 MenuButton settingsbtn = MenuButton(
@@ -207,11 +172,11 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			short x = LOWORD(lParam);
 			short y = HIWORD(lParam);
 
-			bool isCurrentlyOverNewFileBtn = isMouseOverButton(newfilebtn, x, y);
-			bool isCurrentlyOverOpenFileBtn = isMouseOverButton(openfilebtn, x, y);
-			bool isCurrentlyOverExitBtn = isMouseOverButton(exitbtn, x, y);
-			bool isCurrentlyOverMinimizeBtn = isMouseOverButton(minimizebtn, x, y);
-			bool isCurrentlyOverSettingsBtn = isMouseOverButton(settingsbtn, x, y);
+			bool isCurrentlyOverNewFileBtn = newfilebtn.isMouseOverButton(x, y);
+			bool isCurrentlyOverOpenFileBtn = openfilebtn.isMouseOverButton(x, y);
+			bool isCurrentlyOverExitBtn = exitbtn.isMouseOverButton(x, y);
+			bool isCurrentlyOverMinimizeBtn = minimizebtn.isMouseOverButton(x, y);
+			bool isCurrentlyOverSettingsBtn = settingsbtn.isMouseOverButton(x, y);
 
 			if (isCurrentlyOverNewFileBtn != isMouseOverNewFileBtn) {
 				newfilebtn.drawBox(isCurrentlyOverNewFileBtn);
@@ -264,21 +229,27 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 			SetWindowText(hwnd, titolo.c_str());
 			SetCursor(arrow_cursor);
 
-			if (isMouseOverButton(exitbtn, x, y)) {
+			if (exitbtn.isMouseOverButton(x, y)) {
 
 				SendMessage(hwnd, WM_CLOSE, 0, 0);
 				break;
 
 			}
 
-			if (isMouseOverButton(minimizebtn, x, y)) {
+			if (settingsbtn.isMouseOverButton(x, y)) {
+
+				menuOpenSettingsWindow();
+
+			}
+
+			if (minimizebtn.isMouseOverButton(x, y)) {
 
 				SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
 				break;
 
 			}
 
-			if (isMouseOverButton(newfilebtn, x, y))
+			if (newfilebtn.isMouseOverButton(x, y))
 			{
 
 				IFileSaveDialog* pfd;
@@ -360,7 +331,7 @@ LRESULT CALLBACK WndProcMenuWindow(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
 				CoUninitialize();
 
 			}
-			if (isMouseOverButton(openfilebtn, x, y)) {
+			if (openfilebtn.isMouseOverButton(x, y)) {
 
 				OPENFILENAME ofn;
 				WCHAR szFile[260] = { 0 };
